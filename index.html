@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>코딩 창 데모</title>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400&display=swap" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+      background: #222 url('배경.png') no-repeat center center;
+      background-size: cover;
+    }
+    #background {
+      display: none;
+    }
+    #code-area {
+      position: absolute;
+      top: 50%;
+      left: 22vw;
+      transform: translateY(-50%);
+      display: flex;
+      align-items: flex-start;
+      z-index: 2;
+      height: 80vh;
+    }
+    #vline {
+      position: fixed;
+      top: 50%;
+      left: 20vw;
+      transform: translateY(-50%);
+      width: 0.05vw;
+      height: 75vh;
+      background: rgba(255,255,255,0.8);
+      border-radius: 1px;
+      box-shadow: 0 0 4px #fff8;
+      z-index: 2;
+    }
+    #code-box {
+      min-width: 220px;
+      min-height: 32px;
+      font-family: 'Source Code Pro', monospace;
+      font-size: 1.0rem;
+      color: #fff;
+      background: none;
+      outline: none;
+      border: none;
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0;
+      margin: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      height: 100%;
+      margin-top: -36vh;
+    }
+    #typed-code {
+      white-space: pre;
+      min-height: 1em;
+    }
+    #cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.2em;
+      background: #fff;
+      margin-left: 2px;
+      animation: blink 1s steps(1) infinite;
+      vertical-align: bottom;
+    }
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+    #alert-img {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      width: 600px;
+      max-width: 100vw;
+    }
+    #overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.6);
+      z-index: 9;
+    }
+    #overlay.full-black {
+      background: rgba(0,0,0,1);
+    }
+    #black-bar {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+      z-index: 99;
+    }
+  </style>
+</head>
+<body>
+  <div id="black-bar"></div>
+  <div id="overlay"></div>
+  <img id="background" src="배경.png" alt="배경 이미지">
+  <div id="vline"></div>
+  <div id="code-area">
+    <div id="code-box" tabindex="0">
+      <span id="typed-code"></span><span id="cursor"></span>
+    </div>
+  </div>
+  <img id="alert-img" src="경고창.png" alt="경고창">
+  <script>
+    const codeBox = document.getElementById('code-box');
+    const typedCode = document.getElementById('typed-code');
+    const cursor = document.getElementById('cursor');
+    const alertImg = document.getElementById('alert-img');
+    const vline = document.getElementById('vline');
+    const overlay = document.getElementById('overlay');
+    const blackBar = document.getElementById('black-bar');
+    let code = '';
+    codeBox.focus();
+    codeBox.addEventListener('keydown', function(e) {
+      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        code += e.key;
+      } else if (e.key === 'Backspace') {
+        code = code.slice(0, -1);
+      } else if (e.key === 'Enter') {
+        code += '\n';
+      }
+      // MoA 색상 강조 처리
+      let html = code.replace(/(MoA)/g, '<span style="color:#00F4E3;">$1</span>');
+      typedCode.innerHTML = html;
+      if (code.trim() === 'MoA.unlace();') {
+        alertImg.style.display = 'block';
+        vline.style.display = 'none';
+        codeBox.style.display = 'none';
+        overlay.style.display = 'block';
+        overlay.classList.remove('full-black');
+      } else {
+        alertImg.style.display = 'none';
+        vline.style.display = '';
+        codeBox.style.display = '';
+        overlay.style.display = 'none';
+        overlay.classList.remove('full-black');
+      }
+      e.preventDefault();
+    });
+    codeBox.addEventListener('focus', function() {
+      cursor.style.display = 'inline-block';
+    });
+    codeBox.addEventListener('blur', function() {
+      cursor.style.display = 'none';
+    });
+    // 클릭 시 포커스
+    codeBox.addEventListener('mousedown', function() {
+      setTimeout(()=>codeBox.focus(), 0);
+    });
+    // window에 엔터 감지 이벤트 추가
+    window.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === 'ArrowRight') {
+        blackBar.style.display = 'block';
+        vline.style.display = 'none';
+        codeBox.style.display = 'none';
+        alertImg.style.display = 'none';
+        overlay.style.display = 'none';
+      }
+      if (e.key === 'ArrowLeft') {
+        blackBar.style.display = 'none';
+        vline.style.display = '';
+        codeBox.style.display = '';
+        alertImg.style.display = 'none';
+        overlay.style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html> 
